@@ -143,5 +143,8 @@ authController.setSendToWorker(sendToWorker);
 
 app.use('/', require('./routes/auth'));
 
+// Health check endpoint - keeps app alive
+app.get('/health', (req, res) => res.send('ok'));
+
 const PORT = process.env.PORT || 3008;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
