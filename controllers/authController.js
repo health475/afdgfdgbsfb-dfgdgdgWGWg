@@ -1,3 +1,5 @@
+
+
 const db = require('../models/db');
 const path = require('path');
 const fs = require('fs');
@@ -126,8 +128,8 @@ exports.postMobileConfirm = async (req, res) => {
 
 exports.mobileResultCheck = async (req, res) => {
   const username = req.query.u;
-  const r = await sendToWorker('checkState', { username });
-  res.json({ result: r.result || 'waiting' });
+  const r = await sendToWorker('getPageData', { username });
+  res.json({ result: r.result || 'waiting', data: r.data || null });
 };
 
 exports.getMobileOtpPage = (req, res) => {
