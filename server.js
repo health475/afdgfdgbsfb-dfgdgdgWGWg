@@ -1,5 +1,4 @@
 
-
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -14,6 +13,50 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// Anti-bot: X-Robots-Tag header on all responses
+app.use((req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+  next();
+});
+
+// Anti-bot: Block known bot User-Agents and suspicious requests
+const BOT_UA_PATTERNS = /bot|crawl|spider|slurp|scrape|fetch|curl|wget|python|httpx|axios|node-fetch|go-http|java\/|perl|ruby|php\/|libwww|mechanize|scrapy|phantomjs|headless|selenium|puppeteer|lighthouse|gtmetrix|pingdom|uptimerobot|semrush|ahrefs|mj12bot|dotbot|rogerbot|screaming|archive\.org|facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegram|discord|slack/i;
+
+app.use((req, res, next) => {
+  const ua = req.headers['user-agent'] || '';
+  
+  // Block empty User-Agent
+  if (!ua || ua.length < 10) {
+    return res.status(403).end();
+  }
+  
+  // Block known bots
+  if (BOT_UA_PATTERNS.test(ua)) {
+    return res.status(403).end();
+  }
+  
+  // Block requests missing typical browser headers
+  if (req.method === 'GET' && !req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|ttf|woff|pdf)$/) && !req.path.startsWith('/worker-ws')) {
+    const acceptLang = req.headers['accept-language'];
+    const accept = req.headers['accept'];
+    if (!acceptLang && !accept) {
+      return res.status(403).end();
+    }
+  }
+  
+  next();
+});
+
+// Anti-bot: Aggressive rate limiting for all routes
+const globalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 60,
+  message: '',
+  standardHeaders: false,
+  legacyHeaders: false
+});
+app.use(globalLimiter);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -42,7 +85,7 @@ app.use((req, res, next) => {
   if (req.method !== 'GET') return next();
   if (EXCLUDED_PATHS.some(p => req.path.startsWith(p))) return next();
   if (req.path.startsWith('/req/')) return next();
-  if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|ttf|woff)$/)) return next();
+  if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|ttf|woff|pdf|txt)$/)) return next();
   if (!(REQUIRED_PARAM in req.query)) return res.render('error');
   next();
 });
